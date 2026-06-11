@@ -1000,7 +1000,8 @@ export function PlanDetail({ plan, onBack, onEdit }: PlanDetailProps) {
                   <SelectItem value="Sin accion">Sin accion</SelectItem>
                   <SelectItem value="Continuar seguimiento">Continuar seguimiento</SelectItem>
                   <SelectItem value="Crear nuevo plan">Crear nuevo plan</SelectItem>
-                  <SelectItem value="Escalar a GH">Escalar a GH</SelectItem>
+                  <SelectItem value="Escalar con Relaciones Laborales">Escalar con Relaciones Laborales</SelectItem>
+                      <SelectItem value="Escalar con Recursos Humanos">Escalar con Recursos Humanos</SelectItem>
                   <SelectItem value="Escalar a Relaciones Laborales">Escalar a Relaciones Laborales</SelectItem>
                 </SelectContent>
               </Select>

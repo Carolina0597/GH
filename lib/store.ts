@@ -177,15 +177,11 @@ export interface Lider {
 export interface Actividad {
   id: string
   eje: EjePrincipal
-  tema: string
-  hallazgoAsociado: string
-  objetivoEspecifico: string
-  compromiso: string
-  responsable: string
-  fechaInicio: string
-  fechaCompromiso: string
-  indicador: string
-  evidenciaEsperada: string
+  // Campos simplificados DRF v1.1 — reunión 11 jun 2026
+  hallazgoAsociado: string   // de dónde nació la actividad
+  compromiso: string         // actividad / compromiso a realizar
+  fechaCompromiso: string    // fecha de cumplimiento
+  evidenciaEsperada: string  // evidencia esperada
   estado: ActividadEstado
   comentarios: ComentarioActividad[]
   novedades: NovedadActividad[]
@@ -232,6 +228,7 @@ export interface Seguimiento {
   okTalento: boolean
   proximaFecha: string
   evidencias: string[]
+  adjuntos: string[]  // DRF v1.1 — archivos de evidencia en seguimientos
 }
 
 export interface SolicitudForPlus {
@@ -274,13 +271,15 @@ export interface Plan {
   reglasAcuerdos?: string
   beneficioEsperado?: string
   adjuntosIniciales: string[]
-  // Paso 3: Meta y criterio
-  metaTrazada: string
-  objetivoSmart: string
-  indicadores: { nombre: string; meta: string; unidad: string; fechaObjetivo: string; responsable: string }[]
+  // Paso 2 y 3: Criterio de cierre (DRF v1.1 — metaTrazada y beneficioEsperado eliminados)
   criterioCierre: string
-  tiempoPrudente: string
-  riesgosSinMejora: string
+  // Campos legacy opcionales para retrocompatibilidad con datos mock existentes
+  metaTrazada?: string
+  objetivoSmart?: string
+  indicadores?: { nombre: string; meta: string; unidad: string; fechaObjetivo: string; responsable: string }[]
+  tiempoPrudente?: string
+  riesgosSinMejora?: string
+  beneficioEsperado?: string
   // Paso 4: Actividades
   actividades: Actividad[]
   // Paso 5: For+
@@ -388,13 +387,13 @@ function createMockPlans(): Plan[] {
     tiempoPrudente: '3 meses',
     riesgosSinMejora: 'Posible no renovacion de contrato o cambio de rol.',
     actividades: [
-      { id: 'a1', eje: 'hacer', tema: 'Cumplimiento de entregas', hallazgoAsociado: 'Bajo cumplimiento en entregas', objetivoEspecifico: 'Entregar historias de usuario en fecha', compromiso: 'Documentar compromisos del sprint y entregar en fecha', responsable: 'Juan Ramos', fechaInicio: '2026-04-01', fechaCompromiso: '2026-06-30', indicador: '90% de entregas a tiempo', evidenciaEsperada: 'Reportes de Jira', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
-      { id: 'a2', eje: 'hacer', tema: 'Autonomia', hallazgoAsociado: 'Poca autonomia', objetivoEspecifico: 'Buscar informacion antes de escalar', compromiso: 'Buscar informacion de forma autonoma antes de escalar', responsable: 'Juan Ramos', fechaInicio: '2026-04-01', fechaCompromiso: '2026-06-30', indicador: '3 problemas resueltos por sprint', evidenciaEsperada: 'Documentacion de resolucion', estado: 'en_riesgo', comentarios: [], novedades: [], seguimientos: [] },
-      { id: 'a3', eje: 'saber', tema: 'Conocimiento tecnico', hallazgoAsociado: 'Brechas tecnicas', objetivoEspecifico: 'Fortalecer conocimiento en arquitectura', compromiso: 'Completar curso de arquitectura de software', responsable: 'Juan Ramos', fechaInicio: '2026-04-15', fechaCompromiso: '2026-05-30', indicador: 'Curso completado', evidenciaEsperada: 'Certificado', estado: 'pendiente', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a1', eje: 'hacer', hallazgoAsociado: 'Bajo cumplimiento en entregas', compromiso: 'Documentar compromisos del sprint y entregar en fecha', fechaCompromiso: '2026-06-30', evidenciaEsperada: 'Reportes de Jira', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a2', eje: 'hacer', hallazgoAsociado: 'Poca autonomia para resolver problemas', compromiso: 'Buscar informacion de forma autonoma antes de escalar al lider', fechaCompromiso: '2026-06-30', evidenciaEsperada: 'Documentacion de resolucion de al menos 3 problemas por sprint', estado: 'en_riesgo', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a3', eje: 'saber', hallazgoAsociado: 'Brechas en conocimiento tecnico de arquitectura', compromiso: 'Completar curso de arquitectura de software', fechaCompromiso: '2026-05-30', evidenciaEsperada: 'Certificado del curso', estado: 'pendiente', comentarios: [], novedades: [], seguimientos: [] },
     ],
     seguimientos: [
-      { id: 's1', semana: 1, fecha: '2026-04-08', tipo: 'general', observacionGeneral: 'Primera semana de plan. Se revisaron compromisos y expectativas.', acuerdos: 'Documentar cada tarea antes de iniciar.', avanceEstimado: 10, responsable: 'Maria Lopez', okLider: true, okTalento: true, proximaFecha: '2026-04-15', evidencias: [] },
-      { id: 's2', semana: 2, fecha: '2026-04-15', tipo: 'general', observacionGeneral: 'Mejora leve pero aun hay dependencia. Entreg 2 de 3 tareas.', acuerdos: 'Pedir ayuda solo despues de intentar 30 min.', avanceEstimado: 25, responsable: 'Maria Lopez', okLider: true, okTalento: false, proximaFecha: '2026-04-22', evidencias: [] },
+      { id: 's1', semana: 1, fecha: '2026-04-08', tipo: 'general', observacionGeneral: 'Primera semana de plan. Se revisaron compromisos y expectativas.', acuerdos: 'Documentar cada tarea antes de iniciar.', avanceEstimado: 10, responsable: 'Maria Lopez', okLider: true, okTalento: true, proximaFecha: '2026-04-15', evidencias: [], adjuntos: [] },
+      { id: 's2', semana: 2, fecha: '2026-04-15', tipo: 'general', observacionGeneral: 'Mejora leve pero aun hay dependencia. Entrego 2 de 3 tareas.', acuerdos: 'Pedir ayuda solo despues de intentar 30 min.', avanceEstimado: 25, responsable: 'Maria Lopez', okLider: true, okTalento: false, proximaFecha: '2026-04-22', evidencias: [], adjuntos: [] },
     ],
     comentariosTalento: [
       { id: 'ct1', fecha: '2026-04-10', texto: 'Estoy trabajando en mejorar pero a veces las tareas no estan bien definidas.', relacionadoCon: 'plan' },
@@ -442,8 +441,8 @@ function createMockPlans(): Plan[] {
     tiempoPrudente: '3 meses',
     riesgosSinMejora: 'Continuar afectando dinamica de equipo.',
     actividades: [
-      { id: 'a4', eje: 'ser', tema: 'Comunicacion asertiva', hallazgoAsociado: 'Comunicacion cortante', objetivoEspecifico: 'Mejorar comunicacion en reuniones', compromiso: 'Participar en mentoria de comunicacion', responsable: 'Laura Torres', fechaInicio: '2026-03-15', fechaCompromiso: '2026-05-15', indicador: 'Mentoria completada', evidenciaEsperada: 'Registro de sesiones', estado: 'cumplido', comentarios: [], novedades: [], seguimientos: [] },
-      { id: 'a5', eje: 'ser', tema: 'Liderazgo de reuniones', hallazgoAsociado: 'Tension en reuniones', objetivoEspecifico: 'Liderar reuniones con acuerdos', compromiso: 'Liderar reunion semanal documentando acuerdos', responsable: 'Laura Torres', fechaInicio: '2026-03-20', fechaCompromiso: '2026-06-15', indicador: '4 reuniones lideradas', evidenciaEsperada: 'Actas de reunion', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a4', eje: 'ser', hallazgoAsociado: 'Comunicacion cortante en situaciones de presion', compromiso: 'Participar en mentoria de comunicacion asertiva', fechaCompromiso: '2026-05-15', evidenciaEsperada: 'Registro de sesiones de mentoria', estado: 'cumplido', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a5', eje: 'ser', hallazgoAsociado: 'Tension generada en reuniones del equipo', compromiso: 'Liderar reunion semanal documentando acuerdos y compromisos', fechaCompromiso: '2026-06-15', evidenciaEsperada: 'Actas de 4 reuniones lideradas', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
     ],
     solicitudForPlus: { id: 'sf1', estado: 'solicitada', competencia: 'Comunicacion efectiva', tipo: 'Habilidades blandas', justificacion: 'Fortalecer habilidades de comunicacion asertiva.', prioridad: 'media', fechaSugerida: '2026-05-01', comentarios: 'Formacion grupal preferiblemente.', novedadesFor: [] },
     seguimientos: [],
@@ -488,8 +487,8 @@ function createMockPlans(): Plan[] {
     tiempoPrudente: '6 meses',
     riesgosSinMejora: 'Ninguno critico.',
     actividades: [
-      { id: 'a6', eje: 'saber', tema: 'Liderazgo tecnico', hallazgoAsociado: 'Potencial de liderazgo', objetivoEspecifico: 'Liderar iniciativa interna', compromiso: 'Liderar rediseno del design system', responsable: 'Valentina Florez', fechaInicio: '2026-02-15', fechaCompromiso: '2026-05-31', indicador: 'Proyecto completado', evidenciaEsperada: 'Documentacion y presentacion', estado: 'cumplido', comentarios: [], novedades: [], seguimientos: [] },
-      { id: 'a7', eje: 'saber', tema: 'Mentoria', hallazgoAsociado: 'Preparacion para ascenso', objetivoEspecifico: 'Recibir mentoria tecnica', compromiso: 'Sesiones mensuales con Design Lead', responsable: 'Valentina Florez', fechaInicio: '2026-02-01', fechaCompromiso: '2026-07-31', indicador: '6 sesiones completadas', evidenciaEsperada: 'Registro de sesiones', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a6', eje: 'saber', hallazgoAsociado: 'Alto potencial de liderazgo tecnico identificado', compromiso: 'Liderar rediseno del design system y documentar el proceso', fechaCompromiso: '2026-05-31', evidenciaEsperada: 'Documentacion y presentacion del proyecto', estado: 'cumplido', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a7', eje: 'saber', hallazgoAsociado: 'Preparacion necesaria para ascenso a Senior UX', compromiso: 'Sesiones mensuales de mentoria con Design Lead', fechaCompromiso: '2026-07-31', evidenciaEsperada: 'Registro de 6 sesiones completadas', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
     ],
     seguimientos: [],
     comentariosTalento: [],
@@ -533,7 +532,7 @@ function createMockPlans(): Plan[] {
     tiempoPrudente: '6 meses',
     riesgosSinMejora: 'Dificultad para consolidar rol senior.',
     actividades: [
-      { id: 'a8', eje: 'saber', tema: 'Arquitectura de software', hallazgoAsociado: 'Brecha en arquitectura', objetivoEspecifico: 'Completar formacion en arquitectura', compromiso: 'Curso de arquitectura de microservicios', responsable: 'Carlos Mendez', fechaInicio: '2026-03-15', fechaCompromiso: '2026-05-31', indicador: 'Curso completado', evidenciaEsperada: 'Certificado', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a8', eje: 'saber', hallazgoAsociado: 'Brecha en conocimiento de arquitectura de software tras ascenso a Senior', compromiso: 'Completar curso de arquitectura de microservicios', fechaCompromiso: '2026-05-31', evidenciaEsperada: 'Certificado del curso', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
     ],
     seguimientos: [],
     comentariosTalento: [],
@@ -577,7 +576,7 @@ function createMockPlans(): Plan[] {
     tiempoPrudente: '3 meses',
     riesgosSinMejora: 'No renovacion de contrato.',
     actividades: [
-      { id: 'a9', eje: 'hacer', tema: 'Cobertura de pruebas', hallazgoAsociado: 'Baja cobertura', objetivoEspecifico: 'Aumentar cobertura', compromiso: 'Escribir pruebas para cada historia', responsable: 'Nicolas Perez', fechaInicio: '2026-01-15', fechaCompromiso: '2026-05-15', indicador: '80% cobertura', evidenciaEsperada: 'Reportes de SonarQube', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
+      { id: 'a9', eje: 'hacer', hallazgoAsociado: 'Bajo cumplimiento en cobertura de pruebas — bugs en produccion', compromiso: 'Escribir pruebas unitarias para cada historia de usuario del sprint', fechaCompromiso: '2026-05-15', evidenciaEsperada: 'Reportes de SonarQube con cobertura al 80%', estado: 'en_progreso', comentarios: [], novedades: [], seguimientos: [] },
     ],
     seguimientos: [],
     comentariosTalento: [],
@@ -730,7 +729,7 @@ function createMockPlans(): Plan[] {
       antecedentes: 'Antecedentes del caso.',
       impactoObservado: 'Impacto observado.',
       reglasIniciales: 'Reglas de seguimiento.',
-      beneficioEsperado: 'Beneficio esperado del plan.',
+      // beneficioEsperado eliminado DRF v1.1,
       adjuntosIniciales: [],
       metaTrazada: 'Meta del plan.',
       objetivoSmart: 'Objetivo SMART del plan.',
@@ -739,7 +738,7 @@ function createMockPlans(): Plan[] {
       tiempoPrudente: '3 meses',
       riesgosSinMejora: 'Riesgos.',
       actividades: [
-        { id: `a${10 + i}`, eje: p.ejePrincipal!, tema: 'Tema principal', hallazgoAsociado: 'Hallazgo', objetivoEspecifico: 'Objetivo', compromiso: 'Compromiso', responsable: talento.nombre, fechaInicio: '2026-03-01', fechaCompromiso: '2026-06-30', indicador: 'Indicador', evidenciaEsperada: 'Evidencia', estado: 'pendiente', comentarios: [], novedades: [], seguimientos: [] },
+        { id: `a${10 + i}`, eje: p.ejePrincipal!, hallazgoAsociado: 'Hallazgo identificado en evaluacion', compromiso: 'Compromiso de mejora acordado con el lider', fechaCompromiso: '2026-06-30', evidenciaEsperada: 'Evidencia del cumplimiento', estado: 'pendiente', comentarios: [], novedades: [], seguimientos: [] },
       ],
       seguimientos: [],
       comentariosTalento: [],
@@ -911,7 +910,7 @@ export const useForgeStore = create<AppState>((set, get) => ({
 // TIPOS PARA ENCUESTAS/EVALUACIONES
 // =====================================================
 
-export type TipoEncuesta = 'lider_colaborador' | 'lider_lider' | 'colaborador_lider' | 'autoevaluacion' | 'area_interaccion' | 'transversal' | 'prorroga' | '4d_triadas'
+export type TipoEncuesta = 'prorroga' | 'otro' | 'lider_colaborador' | 'lider_lider' | 'colaborador_lider' | 'autoevaluacion' | 'area_interaccion' | 'transversal' | '4d_triadas' // DRF v1.1: tipos activos son solo 'prorroga' | 'otro'  
 
 export type TipoPregunta = 'escala_5' | 'escala_likert' | 'texto_abierto' | 'seleccion_unica' | 'seleccion_multiple' | 'si_no' | 'porcentaje'
 
@@ -941,6 +940,10 @@ export interface Encuesta {
   version: string
   estado: EstadoEncuesta
   preguntas: PreguntaEncuesta[]
+  // DRF v1.1 — campos nuevos confirmados 11 jun 2026
+  fechaInicioEncuesta?: string        // cuándo inicia la encuesta
+  fechaCierreEncuesta?: string        // cuándo cierra la encuesta
+  resultadoMinimoEsperado?: number    // umbral de alerta de plan de mejora (%)
   createdAt: string
   updatedAt: string
   createdBy: string

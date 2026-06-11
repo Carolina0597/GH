@@ -42,22 +42,13 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
     ejes: planToEdit?.ejes || [] as EjePrincipal[],
     criticidad: planToEdit?.criticidad || 'media' as Criticidad,
     
-    // SECCION 2: Motivo, hallazgos, reglas y beneficio esperado
+    // SECCION 2: Hallazgos y acuerdos (DRF v1.1 — metaTrazada y beneficioEsperado eliminados)
     hallazgos: planToEdit?.hallazgos || '',
     reglasAcuerdos: planToEdit?.reglasAcuerdos || '',
-    beneficioEsperado: planToEdit?.beneficioEsperado || '',
-    
-    // SECCION 3: Meta general y criterio de cierre
-    metaTrazada: planToEdit?.metaTrazada || '',
     criterioCierre: planToEdit?.criterioCierre || '',
     
-    // SECCION 4: Actividades / temas a intervenir
+    // SECCION 3: Actividades simplificadas (DRF v1.1)
     actividades: planToEdit?.actividades || [] as Partial<Actividad>[],
-    
-    // SECCION 5: Formacion For+ (opcional)
-    requiereFormacion: !!planToEdit?.solicitudForPlus,
-    competenciaFormacion: planToEdit?.solicitudForPlus?.competencia || '',
-    justificacionFormacion: planToEdit?.solicitudForPlus?.justificacion || '',
   })
   
   const selectedTalento = talentos.find(t => t.id === formData.talentoId)
@@ -88,7 +79,6 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
            formData.fechaFin && 
            formData.ejes.length > 0 && 
            formData.hallazgos &&
-           formData.metaTrazada &&
            formData.criterioCierre &&
            formData.actividades.length > 0
   }, [formData])
@@ -99,19 +89,15 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
       actividades: [...prev.actividades, {
         id: `new-${Date.now()}`,
         eje: prev.ejes[0] || 'hacer',
-        tema: '',
+        // Campos simplificados DRF v1.1
         hallazgoAsociado: '',
-        objetivoEspecifico: '',
         compromiso: '',
-        responsable: selectedTalento?.nombre || '',
-        fechaInicio: formData.fechaInicio,
         fechaCompromiso: formData.fechaFin,
-        indicador: '',
         evidenciaEsperada: '',
         estado: 'pendiente' as ActividadEstado,
         comentarios: [],
         novedades: [],
-        seguimientos: [], // Campo para seguimientos de esta actividad
+        seguimientos: [],
       }]
     }))
   }
@@ -155,18 +141,10 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
       avance: planToEdit?.avance || 0,
       hallazgos: formData.hallazgos,
       reglasAcuerdos: formData.reglasAcuerdos,
-      beneficioEsperado: formData.beneficioEsperado,
-      adjuntosIniciales: planToEdit?.adjuntosIniciales || [],
-      metaTrazada: formData.metaTrazada,
       criterioCierre: formData.criterioCierre,
+      // DRF v1.1 — metaTrazada, beneficioEsperado y solicitudForPlus eliminados del wizard
+      adjuntosIniciales: planToEdit?.adjuntosIniciales || [],
       actividades: formData.actividades as Actividad[],
-      solicitudForPlus: formData.requiereFormacion ? {
-        id: planToEdit?.solicitudForPlus?.id || `sf${Date.now()}`,
-        estado: 'solicitada',
-        competencia: formData.competenciaFormacion,
-        justificacion: formData.justificacionFormacion,
-        novedadesFor: planToEdit?.solicitudForPlus?.novedadesFor || [],
-      } : undefined,
       seguimientos: planToEdit?.seguimientos || [],
       comentariosTalento: planToEdit?.comentariosTalento || [],
       historial: [
@@ -460,10 +438,10 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
           </div>
         </ForgeCard>
 
-        {/* SECCION 2: Motivo, hallazgos, reglas y beneficio esperado */}
+        {/* SECCION 2: Hallazgos, acuerdos y criterio de cierre — DRF v1.1 simplificado */}
         <ForgeCard>
           <div className="bg-primary/20 px-4 py-2 -mx-4 -mt-4 mb-4 rounded-t-lg">
-            <h2 className="font-semibold text-sm">2. Motivo, hallazgos, reglas y beneficio esperado</h2>
+            <h2 className="font-semibold text-sm">2. Hallazgos, acuerdos y criterio de cierre</h2>
           </div>
             
             <div className="space-y-4">
@@ -481,7 +459,7 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
                 <Textarea
                 value={formData.hallazgos}
                 onChange={(e) => setFormData(p => ({ ...p, hallazgos: e.target.value }))}
-                placeholder="Describe los hallazgos o situacion que motiva este plan..."
+                placeholder="Describe los hallazgos o situación que motiva este plan..."
                 rows={3}
               />
             </div>
@@ -492,54 +470,16 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
                 value={formData.reglasAcuerdos}
                 onChange={(e) => setFormData(p => ({ ...p, reglasAcuerdos: e.target.value }))}
                 placeholder="Define las reglas y acuerdos para el seguimiento del plan..."
-                rows={3}
-              />
-            </div>
-            
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1 block">Beneficio esperado del plan</Label>
-              <Textarea 
-                value={formData.beneficioEsperado}
-                onChange={(e) => setFormData(p => ({ ...p, beneficioEsperado: e.target.value }))}
-                placeholder="Describe el beneficio esperado al completar este plan..."
-                rows={3}
-              />
-            </div>
-          </div>
-        </ForgeCard>
-
-        {/* SECCION 3: Meta general y criterio de cierre */}
-        <ForgeCard>
-          <div className="bg-primary/20 px-4 py-2 -mx-4 -mt-4 mb-4 rounded-t-lg">
-            <h2 className="font-semibold text-sm">3. Meta general y criterio de cierre</h2>
-          </div>
-            
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs text-muted-foreground">Meta trazada antes de iniciar *</Label>
-                  <VoiceAIAssistant
-                    mode="field"
-                    fieldName="metaTrazada"
-                    fieldLabel="Meta"
-                    context={{ tipoplan: tipo, talento: selectedTalento?.nombre, ejes: formData.ejes, hallazgos: formData.hallazgos }}
-                    onSuggestion={(text) => setFormData(p => ({ ...p, metaTrazada: text }))}
-                  />
-                </div>
-                <Textarea
-                value={formData.metaTrazada}
-                onChange={(e) => setFormData(p => ({ ...p, metaTrazada: e.target.value }))}
-                placeholder="Define la meta que se espera alcanzar con este plan..."
                 rows={2}
               />
             </div>
             
             <div>
-              <Label className="text-xs text-muted-foreground mb-1 block">Criterio para cerrar el plan *</Label>
+              <Label className="text-xs text-muted-foreground mb-1 block">Criterio de cumplimiento para el cierre del plan *</Label>
               <Textarea 
                 value={formData.criterioCierre}
                 onChange={(e) => setFormData(p => ({ ...p, criterioCierre: e.target.value }))}
-                placeholder="Define los criterios que deben cumplirse para cerrar el plan..."
+                placeholder="¿Qué debe cumplirse para poder cerrar este plan?"
                 rows={2}
               />
             </div>
@@ -589,63 +529,28 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div className="lg:col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">Tema a intervenir</Label>
-                      <Input 
-                        value={act.tema || ''} 
-                        onChange={(e) => handleUpdateActividad(idx, 'tema', e.target.value)}
-                        placeholder="Tema..."
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div className="lg:col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">Hallazgo asociado</Label>
+                  {/* Matriz simplificada DRF v1.1: hallazgo, actividad, fecha, evidencia */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="md:col-span-2">
+                      <Label className="text-[10px] text-muted-foreground">¿De dónde nace? (hallazgo asociado)</Label>
                       <Input 
                         value={act.hallazgoAsociado || ''} 
                         onChange={(e) => handleUpdateActividad(idx, 'hallazgoAsociado', e.target.value)}
-                        placeholder="Hallazgo..."
+                        placeholder="Ej: Bajo cumplimiento en entregas..."
                         className="h-8 text-sm"
                       />
                     </div>
-                    <div className="lg:col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">Objetivo especifico</Label>
-                      <Input 
-                        value={act.objetivoEspecifico || ''} 
-                        onChange={(e) => handleUpdateActividad(idx, 'objetivoEspecifico', e.target.value)}
-                        placeholder="Objetivo..."
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div className="lg:col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">Actividad / compromiso</Label>
+                    <div className="md:col-span-2">
+                      <Label className="text-[10px] text-muted-foreground">Actividad / compromiso *</Label>
                       <Input 
                         value={act.compromiso || ''} 
                         onChange={(e) => handleUpdateActividad(idx, 'compromiso', e.target.value)}
-                        placeholder="Compromiso..."
+                        placeholder="¿Qué va a hacer el talento?..."
                         className="h-8 text-sm"
                       />
                     </div>
                     <div>
-                      <Label className="text-[10px] text-muted-foreground">Responsable</Label>
-                      <Input 
-                        value={act.responsable || selectedTalento?.nombre || ''} 
-                        onChange={(e) => handleUpdateActividad(idx, 'responsable', e.target.value)}
-                        placeholder="Responsable..."
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] text-muted-foreground">Fecha inicio</Label>
-                      <Input 
-                        type="date"
-                        value={act.fechaInicio || formData.fechaInicio} 
-                        onChange={(e) => handleUpdateActividad(idx, 'fechaInicio', e.target.value)}
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] text-muted-foreground">Fecha compromiso</Label>
+                      <Label className="text-[10px] text-muted-foreground">Fecha de cumplimiento *</Label>
                       <Input 
                         type="date"
                         value={act.fechaCompromiso || formData.fechaFin} 
@@ -654,20 +559,11 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
                       />
                     </div>
                     <div>
-                      <Label className="text-[10px] text-muted-foreground">Indicador / meta</Label>
-                      <Input 
-                        value={act.indicador || ''} 
-                        onChange={(e) => handleUpdateActividad(idx, 'indicador', e.target.value)}
-                        placeholder="Indicador..."
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div className="lg:col-span-2">
                       <Label className="text-[10px] text-muted-foreground">Evidencia esperada</Label>
                       <Input 
                         value={act.evidenciaEsperada || ''} 
                         onChange={(e) => handleUpdateActividad(idx, 'evidenciaEsperada', e.target.value)}
-                        placeholder="Evidencia..."
+                        placeholder="¿Qué documenta el cumplimiento?..."
                         className="h-8 text-sm"
                       />
                     </div>
@@ -696,44 +592,8 @@ export function PlanWizard({ tipo, planToEdit, onCancel, onComplete }: PlanWizar
           )}
         </ForgeCard>
 
-        {/* SECCION 5: Formacion For+ (opcional) - Toggle */}
-        <ForgeCard>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-sm flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-emerald-400" />
-                5. Formacion For+ (opcional)
-              </h2>
-              <p className="text-xs text-muted-foreground">Activa esta opcion si el plan requiere solicitar formacion a For+</p>
-            </div>
-            <Switch
-              checked={formData.requiereFormacion}
-              onCheckedChange={(checked) => setFormData(p => ({ ...p, requiereFormacion: checked }))}
-            />
-          </div>
-          
-          {formData.requiereFormacion && (
-            <div className="mt-4 pt-4 border-t border-border space-y-4">
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Competencia o tema a desarrollar</Label>
-                <Input 
-                  value={formData.competenciaFormacion}
-                  onChange={(e) => setFormData(p => ({ ...p, competenciaFormacion: e.target.value }))}
-                  placeholder="Ej: Comunicacion asertiva, Excel avanzado..."
-                />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Justificacion de la solicitud</Label>
-                <Textarea 
-                  value={formData.justificacionFormacion}
-                  onChange={(e) => setFormData(p => ({ ...p, justificacionFormacion: e.target.value }))}
-                  placeholder="Explica por que se necesita esta formacion..."
-                  rows={2}
-                />
-              </div>
-            </div>
-          )}
-        </ForgeCard>
+        {/* SECCION 3 (ex-4): Actividades — ya renderizada arriba */}
+        {/* Formación For+ eliminada del wizard — DRF v1.1, reunión 11 jun 2026 */}
       </div>
     </div>
   )
